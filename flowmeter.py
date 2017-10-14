@@ -1,5 +1,7 @@
 import time
+from datetime import datetime
 import random
+
 class FlowMeter():
   PINTS_IN_A_LITER = 2.11338
   SECONDS_IN_A_MINUTE = 60
@@ -9,6 +11,8 @@ class FlowMeter():
   enabled = True
   clicks = 0
   lastClick = 0
+  pourStarted = 0 # timestamp of first click
+  pourEnded = 0 # timestamp of last click
   clickDelta = 0
   hertz = 0.0
   flow = 0 # in Liters per second
@@ -20,6 +24,8 @@ class FlowMeter():
     self.beverage = beverage
     self.clicks = 0
     self.lastClick = int(time.time() * FlowMeter.MS_IN_A_SECOND)
+    self.pourStarted = 0
+    self.pourEnded = 0
     self.clickDelta = 0
     self.hertz = 0.0
     self.flow = 0.0
@@ -28,6 +34,8 @@ class FlowMeter():
     self.enabled = True
 
   def update(self, currentTime):
+    if (self.thisPour == 0.0):
+      self.pourStarted = datetime.now()
     self.clicks += 1
     # get the time delta
     self.clickDelta = max((currentTime - self.lastClick), 1)
@@ -40,6 +48,7 @@ class FlowMeter():
       self.totalPour += instPour
     # Update the last click
     self.lastClick = currentTime
+    self.pourEnded = datetime.now()
 
   def getBeverage(self):
     return str(random.choice(self.beverage))
