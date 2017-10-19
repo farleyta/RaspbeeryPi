@@ -1,6 +1,8 @@
 import os
 import uuid
 import psycopg2
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv())
 
 DEFAULT_USER_ID = "904ca286-98cb-4db5-a1d7-5f0b1f34f87e"
 
