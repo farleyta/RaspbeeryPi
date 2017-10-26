@@ -31,36 +31,31 @@ def insertQuery(query, values):
         print "ERR - unable to insert"
         print e
 
-    
-    #rows = cur.fetchall()
-    #print rows
-    #for row in rows:
-    #    print "  ", row
-    
     conn.commit()
     cur.close()
     conn.close()
 
-def logPour(amount, beverage, pour_time_start, pour_time_end):
+def logPour(amount, amount_formatted, beverage, pour_time_start, pour_time_end):
 
-    # TODO: Alter amount data type from TEXT to INT
     insertQuery( 
             """INSERT INTO pours (
                 id, 
-                amount, 
+                amount,
+                amount_formatted,
                 user_id, 
                 beverage_id,
                 pour_time_start,
                 pour_time_end
-            ) VALUES (%s, %s, %s, %s, %s, %s);""",
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s);""",
             (
                 str(uuid.uuid4()), 
                 amount,
+                amount_formatted,
                 DEFAULT_USER_ID,
                 beverage,
                 pour_time_start,
                 pour_time_end
             ))
 
-    print("Someone poured ", amount, " of ", beverage, " starting at ",
+    print("Someone poured ", amount_formatted, " of ", beverage, " starting at ",
             pour_time_start, " and ending at ", pour_time_end, ".")

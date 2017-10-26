@@ -70,13 +70,19 @@ class FlowMeter():
       return str(round(self.thisPour,3)) + ' L'
     else:
       return str(round(self.thisPour * FlowMeter.PINTS_IN_A_LITER, 3)) + ' pints'
-  
+ 
+  def getThisPourInClicks(self):
+    return self.clicks
+
   def getFormattedTotalPour(self):
     if(self.displayFormat == 'metric'):
       return str(round(self.totalPour,3)) + ' L'
     else:
       return str(round(self.totalPour * FlowMeter.PINTS_IN_A_LITER, 3)) + ' pints'
 
-  def clear(self):
+  def finishPour(self):
     self.thisPour = 0;
+    self.clicks = 0;
+
+  def finishKeg(self):
     self.totalPour = 0;
