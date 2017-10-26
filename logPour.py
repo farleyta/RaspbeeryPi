@@ -1,13 +1,15 @@
+import json
 import os
 import uuid
 import psycopg2
+import requests
 from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv())
 
 DEFAULT_USER_ID = "904ca286-98cb-4db5-a1d7-5f0b1f34f87e"
 
 # TODO: use connection pooling?
-def insertQuery(query, values): 
+def insertPour(query, values): 
     host = os.environ.get('DB_HOST')
     dbname = os.environ.get('DB_DATABASE')
     user = os.environ.get('DB_USER')
@@ -35,9 +37,22 @@ def insertQuery(query, values):
     cur.close()
     conn.close()
 
+def emitPour(pourJSON):
+    authToken = os.environ.get('AUTH_TOKEN')
+    r = requests.post(
+        'http://beer.timfarley.com/topics/pours',
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + authToken
+        },
+        data = pourJSON
+    )
+    print(r.text)
+
 def logPour(amount, amount_formatted, beverage, pour_time_start, pour_time_end):
 
-    insertQuery( 
+    # Log to DB
+    insertPour( 
             """INSERT INTO pours (
                 id, 
                 amount,
@@ -56,6 +71,18 @@ def logPour(amount, amount_formatted, beverage, pour_time_start, pour_time_end):
                 pour_time_start,
                 pour_time_end
             ))
+
+    # Emit to Kafka Stream
+    data = {
+        'amount': amount,
+        'amountFormatted': amount_formatted,
+        'userId': DEFAULT_USER_ID,
+        'beverageId': beverage,
+        'pourTimeStart': pour_time_start.__str__(),
+        'pourTimeEnd': pour_time_end.__str__()
+    }
+
+    emitPour(json.dumps(data))
 
     print("Someone poured ", amount_formatted, " of ", beverage, " starting at ",
             pour_time_start, " and ending at ", pour_time_end, ".")

@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import time
+from datetime import datetime
 import RPi.GPIO as GPIO
 
 from flowmeter import *
@@ -15,9 +16,12 @@ GPIO.setup(RIGHT_TAP_GPIO,GPIO.IN, pull_up_down=GPIO.PUD_UP)
 print "start"
 
 # Water 1 - 68725d44-bec8-405a-acda-b558e4a141d5
+debug = '00000000-0000-0000-0000-000000000000'
+beer = '4cee422a-5f3e-4159-9cf4-f4beab98c08f'
+water = '843c059a-76ad-41d1-b3f1-2647785651d4'
 
-left = FlowMeter('metric', ['4cee422a-5f3e-4159-9cf4-f4beab98c08f']) # beer
-right = FlowMeter('metric', ['843c059a-76ad-41d1-b3f1-2647785651d4']) # water
+left = FlowMeter('metric', [beer]) # beer
+right = FlowMeter('metric', [water]) # water
 minimumPour = 0.001
 
 def countPulses(channel):
@@ -31,6 +35,9 @@ def countPulses(channel):
 
 GPIO.add_event_detect(LEFT_TAP_GPIO, GPIO.RISING, callback=countPulses, bouncetime=20)
 GPIO.add_event_detect(RIGHT_TAP_GPIO, GPIO.RISING, callback=countPulses, bouncetime=20)
+
+# Simulate a Pour
+# logPour(13, '0.13 L', debug, datetime.now(), datetime.now()) 
 
 while True:
     currentTime = int(time.time() * FlowMeter.MS_IN_A_SECOND)
