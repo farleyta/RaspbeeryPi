@@ -3,10 +3,27 @@ import os
 import uuid
 import psycopg2
 import requests
+from oauthlib.oauth2 import BackendApplicationClient
+from requests_oauthlib import OAuth2Session
 from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv())
 
 DEFAULT_USER_ID = "904ca286-98cb-4db5-a1d7-5f0b1f34f87e"
+
+token_url = os.environ.get('TOKEN_URL')
+client_id = os.environ.get('CLIENT_ID')
+client_secret = os.environ.get('CLIENT_SECRET')
+audience = os.environ.get('TOKEN_AUDIENCE')
+
+client = BackendApplicationClient(client_id=client_id)
+oauth = OAuth2Session(client=client)
+
+def getToken():
+    return oauth.fetch_token(token_url=token_url, client_id=client_id,
+        client_secret=client_secret, audience=audience)
+
+# grab initial token
+token = getToken()
 
 # TODO: use connection pooling?
 def insertPour(query, values): 
@@ -38,16 +55,21 @@ def insertPour(query, values):
     conn.close()
 
 def emitPour(pourJSON):
-    authToken = os.environ.get('AUTH_TOKEN')
-    r = requests.post(
-        'http://beer.timfarley.com/topics/pours',
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + authToken
-        },
-        data = pourJSON
-    )
-    print(r.text)
+
+    try:
+        r = requests.post(
+            'http://beer.timfarley.com/topics/pours',
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token.get('access_token')
+            },
+            data = pourJSON
+        )
+        print(r.text)
+    
+    except TokenExpiredError as e:
+        getToken()
+        emitPour(pourJSON)
 
 def logPour(amount, amount_formatted, beverage, pour_time_start, pour_time_end):
 
